@@ -12,7 +12,7 @@ import { UsuarioRestService } from 'src/app/shared/services/usuario-rest.service
   styleUrl: './manter-usuario.component.scss',
 })
 export class ManterUsuarioComponent {
-  usuario = new Usuario('1', '', 0);
+  usuario = new Usuario('', '', 0);
   modoEdicao = false;
 
   constructor(
@@ -22,27 +22,31 @@ export class ManterUsuarioComponent {
     private mensagemService: MensagemSweetService
   ) {
     const idParaEdicao = rotaAtual.snapshot.paramMap.get('id');
-    console.log(idParaEdicao);
     if (idParaEdicao) {
       this.modoEdicao = true;
-      usuarioService.buscarPorId(idParaEdicao).subscribe({
-        next: (usuarioRecebido) => (this.usuario = usuarioRecebido),
-      });
-      console.log(this.usuario);
-      // usuarioService.atualizar(this.usuario);
     }
   }
 
   inserir() {
     if (!this.modoEdicao) {
       try {
-        this.usuarioService.inserir(this.usuario);
+        this.usuarioService.inserir(this.usuario).subscribe({ next: () => {} });
 
         this.roteador.navigate(['listagem-usuarios']);
         this.mensagemService.sucesso('Usuário cadastrado com sucesso.');
       } catch (e: any) {
         this.mensagemService.erro(e.message);
       }
+    } else {
+      this.usuarioService.atualizar(this.usuario).subscribe({
+        next: () => {
+          this.roteador.navigate(['listagem-usuarios']);
+          this.mensagemService.sucesso('Usuário atualizado com sucesso.');
+        },
+        error: (error) => {
+          this.mensagemService.erro('Erro ao atualizar usuário.');
+        },
+      });
     }
   }
 }
